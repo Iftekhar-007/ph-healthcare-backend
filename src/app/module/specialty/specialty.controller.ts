@@ -1,78 +1,56 @@
 import { Request, Response } from "express";
 import { specialtyService } from "./specialty.service";
+import { catchAsync } from "../../shared/catchAsync";
 
-const createSpecialty = async (req: Request, res: Response) => {
-  try {
-    const payload = req.body;
+const createSpecialty = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
 
-    const result = await specialtyService.createSpecialty(payload);
+  const result = await specialtyService.createSpecialty(payload);
 
-    res.status(201).json({
-      success: true,
-      message: "Specialty Created Successfully!",
-      data: result,
-    });
-  } catch (err: unknown) {
-    let message = "something went wrong!";
+  res.status(201).json({
+    success: true,
+    message: "specialty created successfulyy!",
+    data: result,
+  });
+});
 
-    if (err instanceof Error) {
-      message = err.message;
-    }
-    res.status(500).json({
-      success: false,
-      message,
-    });
-  }
-};
+const getAllSpecialty = catchAsync(async (req: Request, res: Response) => {
+  const result = await specialtyService.getAllSpecialty();
 
-const getAllSpecialty = async (req: Request, res: Response) => {
-  try {
-    const result = await specialtyService.getAllSpecialty();
+  res.status(201).json({
+    success: true,
+    message: "All Specialty Retrieved Successfully!",
+    data: result,
+  });
+});
 
-    res.status(201).json({
-      success: true,
-      message: "All Specialty",
-      data: result,
-    });
-  } catch (err: unknown) {
-    let message = "something went wrong!";
+const deleteSpecialty = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-    if (err instanceof Error) {
-      message = err.message;
-    }
-    res.status(400).json({
-      success: false,
-      message,
-    });
-  }
-};
+  const result = await specialtyService.deleteSpecialty(id as string);
 
-const deleteSpecialty = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+  res.status(201).json({
+    success: true,
+    message: "Specialty Deleted Successfully!",
+    data: result,
+  });
+});
 
-    const result = await specialtyService.deleteSpecialty(id as string);
+const updateSpecialty = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-    res.status(201).json({
-      success: true,
-      message: "Specialty Deleted Successfully!",
-      data: result,
-    });
-  } catch (err: unknown) {
-    let message = "something went wrong!";
+  const result = await specialtyService.updateSpecialty(id as string, req.body);
 
-    if (err instanceof Error) {
-      message = err.message;
-    }
-    res.status(500).json({
-      success: false,
-      message,
-    });
-  }
-};
+  res.status(201).json({
+    success: true,
+    message: "Specialty updated Successfully!",
+    data: result,
+  });
+});
 
 export const specialtyController = {
   createSpecialty,
   getAllSpecialty,
   deleteSpecialty,
+  updateSpecialty,
 };
