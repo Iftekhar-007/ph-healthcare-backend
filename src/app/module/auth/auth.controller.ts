@@ -16,6 +16,20 @@ const registerpatient = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logInUser = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await UserService.logInUser(payload);
+
+  sendResponse(res, {
+    httpStatusCode: 200,
+    success: true,
+    message: "user loggedin successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   registerpatient,
+  logInUser,
 };
