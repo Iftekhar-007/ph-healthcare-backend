@@ -3,6 +3,6 @@ import { userController } from "./user.controller";
 
 const router = Router();
 
-router.post("/creat-doctor", userController.createDoctor);
+router.post("/create-doctor", userController.createDoctor);
 
-export const userRouter = router;
+export const userRoutes = router;
