@@ -11,7 +11,7 @@ const createDoctor = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     httpStatusCode: status.CREATED,
     success: true,
-    message: "Doctor Created SUccessfully!",
+    message: "Doctor Created Successfully!",
     data: result,
   });
 });

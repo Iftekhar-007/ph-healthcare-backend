@@ -5,4 +5,10 @@ const router = Router();
 
 router.get("/all-doctors", doctorController.getAllDoctors);
 
+router.get("/:doctorId", doctorController.getDoctorById);
+
+router.patch("/:doctorId", doctorController.updateDoctor);
+
+router.delete("/:doctorId", doctorController.deleteDoctor);
+
 export const doctorRoutes = router;
