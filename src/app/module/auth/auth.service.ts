@@ -1,4 +1,6 @@
+import status from "http-status";
 import { UserRole, UserStatus } from "../../../generated/prisma/enums";
+import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
@@ -71,10 +73,16 @@ const logInUser = async (payload: IOLogInInfoType) => {
   }
 
   if (data.user.status === UserStatus.BLOCKED) {
-    throw new Error("Your account is blocked. Please contact support.");
+    throw new AppError(
+      status.FORBIDDEN,
+      "Your account is blocked. Please contact support.",
+    );
   }
   if (data.user.isDeleted) {
-    throw new Error("Your account is deleted. Please contact support.");
+    throw new AppError(
+      status.NOT_FOUND,
+      "Your account is deleted. Please contact support.",
+    );
   }
 
   return data;

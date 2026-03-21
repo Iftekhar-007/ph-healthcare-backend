@@ -1,3 +1,5 @@
+import status from "http-status";
+import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateDoctorPayload } from "./doctor.interface";
 
@@ -41,7 +43,7 @@ const deleteDoctor = async (doctorId: string) => {
   });
 
   if (!findDoctor) {
-    throw new Error("Doctor not found with this id");
+    throw new AppError(status.NOT_FOUND, "Doctor not found with this id");
   }
 
   try {
@@ -88,7 +90,7 @@ const updateDoctor = async (
   });
 
   if (!findDoctor) {
-    throw new Error("Doctor not found with this id");
+    throw new AppError(status.NOT_FOUND, "Doctor not found with this id");
   }
 
   try {
@@ -100,7 +102,7 @@ const updateDoctor = async (
       });
 
       if (!account) {
-        throw new Error("Account not found");
+        throw new AppError(status.NOT_FOUND, "Account not found");
       }
 
       const updatedPassword = await tx.account.update({
