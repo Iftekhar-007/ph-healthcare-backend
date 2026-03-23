@@ -44,8 +44,30 @@ const registerPatient = async (payload: IORegisterInfoType) => {
       return patientTx;
     });
 
+    const accessToken = tokenUtils.getAccessToken({
+      userdId: data.user.id,
+      role: data.user.role,
+      email: data.user.email,
+      name: data.user.name,
+      emailVerified: data.user.emailVerified,
+      status: data.user.status,
+      isDeleted: data.user.isDeleted,
+    });
+
+    const refreshToken = tokenUtils.getRefreshToken({
+      userdId: data.user.id,
+      role: data.user.role,
+      email: data.user.email,
+      name: data.user.name,
+      emailVerified: data.user.emailVerified,
+      status: data.user.status,
+      isDeleted: data.user.isDeleted,
+    });
+
     return {
       ...data,
+      accessToken,
+      refreshToken,
       patient,
     };
   } catch (err) {
