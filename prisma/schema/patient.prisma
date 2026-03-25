@@ -15,6 +15,7 @@ model Patient {
     reviews           Review[]
     appointments      Appointment[]
     patientHealthData PatientHealthData?
+    prescriptions     Prescription[]
 
     @@index([userId], name: "idx_patient_userId")
     @@index([email], name: "idx_patient_email")
