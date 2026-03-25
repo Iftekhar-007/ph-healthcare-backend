@@ -1,7 +1,7 @@
 model PatientHealthData {
-    id                  String        @id @default(uuid(7))
-    patientId           String        @unique
-    patient             Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    id                  String         @id @default(uuid(7))
+    patientId           String         @unique
+    patient             Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     dateOfBirth         DateTime
     gender              Gender
     bloodGroup          BloodGroup
@@ -10,16 +10,19 @@ model PatientHealthData {
     height              String
     weight              String
     smokingStatus       Boolean
-    dietaryPreference   String
+    dietaryPreference   String?
     pregnancyStatus     Boolean
-    mentalHealthHistory String
-    immunizationSTatus  String
+    mentalHealthHistory String?
+    immunizationSTatus  String?
     hasPastSurgeries    Boolean
     recentAnxiety       Boolean
     recentDepression    Boolean
-    maritalStatus       MaritalStatus @default(UNMARRIED)
+    maritalStatus       MaritalStatus? @default(UNMARRIED)
     isDeleted           Boolean
     deletedAt           DateTime
-    createdAt           DateTime      @default(now())
-    updatedAt           DateTime      @updatedAt
+    createdAt           DateTime       @default(now())
+    updatedAt           DateTime       @updatedAt
+
+    @@index([patientId], name: "idx_patient_health_data_patientId")
+    @@map("patienthealthdata")
 }
