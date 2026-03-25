@@ -29,14 +29,14 @@
     "@types/node": "^25.3.2",
     "@types/pg": "^8.18.0",
     "eslint": "^10.0.2",
-    "prisma": "^7.4.2",
+    "prisma": "^7.5.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.2",
-    "@prisma/client": "^7.4.2",
+    "@prisma/client": "^7.5.0",
     "better-auth": "^1.5.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.3.1",
