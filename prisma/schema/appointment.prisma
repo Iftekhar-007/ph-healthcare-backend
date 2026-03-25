@@ -13,6 +13,7 @@ model Appointment {
     updatedAt      DateTime      @updatedAt
     reviews        Review[]
     prescriptions  Prescription?
+    payments       Payment?
 
     @@index([patientId], name: "idx_appointment_patientId")
     @@index([doctorId], name: "idx_appointment_doctorId")
