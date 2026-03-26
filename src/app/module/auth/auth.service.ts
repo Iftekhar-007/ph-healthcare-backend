@@ -4,6 +4,7 @@ import AppError from "../../errorHelpers/AppError";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 import { tokenUtils } from "../../utils/token";
+import { IORequestUser } from "../../interfaces/requestUser.interface";
 
 interface IORegisterInfoType {
   name: string;
@@ -135,7 +136,41 @@ const logInUser = async (payload: IOLogInInfoType) => {
   };
 };
 
+const getMe = async (user: IORequestUser) => {
+  const getMyProfile = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    include: {
+      patient: {
+        include: {
+          patientHealthData: true,
+          reviews: true,
+          appointments: true,
+          prescriptions: true,
+          medicalreports: true,
+        },
+      },
+      doctor: {
+        include: {
+          doctorSpecialties: true,
+          appointments: true,
+          prescriptions: {
+            include: {
+              patient: true,
+            },
+          },
+          reviews: true,
+        },
+      },
+      admin: true,
+    },
+  });
+  return getMyProfile;
+};
+
 export const UserService = {
   registerPatient,
   logInUser,
+  getMe,
 };

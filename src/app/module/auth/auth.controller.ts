@@ -53,7 +53,20 @@ const logInUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMe = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const result = await UserService.getMe(user);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "user retrieved successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   registerpatient,
   logInUser,
+  getMe,
 };

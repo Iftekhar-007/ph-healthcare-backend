@@ -83,6 +83,12 @@ export const checkAuth =
               "Forbidden Access! You are not allowed to access this route 🤔!!",
             );
           }
+
+          req.user = {
+            userId: user.id,
+            email: user.email,
+            role: user.role,
+          };
         }
       }
 
