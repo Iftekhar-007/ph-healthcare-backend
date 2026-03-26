@@ -142,15 +142,7 @@ const getMe = async (user: IORequestUser) => {
       id: user.userId,
     },
     include: {
-      patient: {
-        include: {
-          patientHealthData: true,
-          reviews: true,
-          appointments: true,
-          prescriptions: true,
-          medicalreports: true,
-        },
-      },
+      patient: true,
       doctor: {
         include: {
           doctorSpecialties: true,
