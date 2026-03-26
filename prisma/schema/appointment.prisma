@@ -18,5 +18,6 @@ model Appointment {
     @@index([patientId], name: "idx_appointment_patientId")
     @@index([doctorId], name: "idx_appointment_doctorId")
     @@index([scheduleId], name: "idx_appointment_scheduleId")
+    @@index([status], name: "idx_appointment_status")
     @@map("appointments")
 }

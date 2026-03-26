@@ -5,20 +5,20 @@ model PatientHealthData {
     dateOfBirth         DateTime
     gender              Gender
     bloodGroup          BloodGroup
-    hasAllergy          Boolean
-    hasDiabetic         Boolean
+    hasAllergy          Boolean        @default(false)
+    hasDiabetic         Boolean        @default(false)
     height              String
     weight              String
-    smokingStatus       Boolean
+    smokingStatus       Boolean        @default(false)
     dietaryPreference   String?
-    pregnancyStatus     Boolean
+    pregnancyStatus     Boolean        @default(false)
     mentalHealthHistory String?
     immunizationSTatus  String?
-    hasPastSurgeries    Boolean
-    recentAnxiety       Boolean
-    recentDepression    Boolean
+    hasPastSurgeries    Boolean        @default(false)
+    recentAnxiety       Boolean        @default(false)
+    recentDepression    Boolean        @default(false)
     maritalStatus       MaritalStatus? @default(UNMARRIED)
-    isDeleted           Boolean
+    isDeleted           Boolean        @default(false)
     deletedAt           DateTime
     createdAt           DateTime       @default(now())
     updatedAt           DateTime       @updatedAt
