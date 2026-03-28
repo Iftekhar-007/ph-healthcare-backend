@@ -1,5 +1,10 @@
+export interface IUpdateDoctorSpecialtyPayload {
+  specialtyId: string;
+  shouldDelete?: boolean;
+}
+
 export interface IUpdateDoctorPayload {
-  password?: string;
+  // password?: string;
   doctor?: {
     name?: string;
     profilePhoto?: string;

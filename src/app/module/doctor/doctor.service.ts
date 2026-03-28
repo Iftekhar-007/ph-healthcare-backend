@@ -82,7 +82,7 @@ const updateDoctor = async (
   doctorId: string,
   payload: IUpdateDoctorPayload,
 ) => {
-  const { password, doctor } = payload;
+  // const { doctor } = payload;
   const findDoctor = await prisma.doctor.findUnique({
     where: {
       id: doctorId,
@@ -94,6 +94,7 @@ const updateDoctor = async (
   }
 
   try {
+    const { doctor, specialties } = payload;
     const result = await prisma.$transaction(async (tx) => {
       const account = await tx.account.findFirst({
         where: {
@@ -105,14 +106,14 @@ const updateDoctor = async (
         throw new AppError(status.NOT_FOUND, "Account not found");
       }
 
-      const updatedPassword = await tx.account.update({
-        where: {
-          id: account.id,
-        },
-        data: {
-          password,
-        },
-      });
+      // const updatedPassword = await tx.account.update({
+      //   where: {
+      //     id: account.id,
+      //   },
+      //   data: {
+      //     password,
+      //   },
+      // });
 
       const updatedDoctorInfo = await tx.doctor.update({
         where: {
@@ -123,7 +124,23 @@ const updateDoctor = async (
         },
       });
 
-      return { updatedPassword, updatedDoctorInfo };
+      // if (specialties && specialties.length > 0) {
+      //   for (const specialty of specialties) {
+      //     const { specialtyId, shouldDelete } = specialty;
+      //     if (shouldDelete) {
+      //       await tx.doctorSpecialty.delete({
+      //         where: {
+      //           doctorId_specialtyId: {
+      //             doctorId: doctorId,
+      //             specialtyId: specialtyId,
+      //           },
+      //         },
+      //       });
+      //     }
+      //   }
+      // }
+
+      return { updatedDoctorInfo };
     });
     return result;
   } catch (err) {
