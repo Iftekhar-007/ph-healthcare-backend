@@ -18,6 +18,10 @@ router.patch(
   doctorController.updateDoctor,
 );
 
-router.delete("/:doctorId", doctorController.deleteDoctor);
+router.delete(
+  "/:doctorId",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  doctorController.deleteDoctor,
+);
 
 export const doctorRoutes = router;
