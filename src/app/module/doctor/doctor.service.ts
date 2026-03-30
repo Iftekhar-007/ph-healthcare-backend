@@ -3,6 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateDoctorPayload } from "./doctor.interface";
 
+// ! get all doctor api
 const getAllDoctors = async () => {
   const result = await prisma.doctor.findMany({
     include: {
@@ -18,6 +19,7 @@ const getAllDoctors = async () => {
   return result;
 };
 
+// ! get doctor by id
 const getDoctorById = async (doctorId: string) => {
   const doctor = await prisma.doctor.findUnique({
     where: {
@@ -35,6 +37,7 @@ const getDoctorById = async (doctorId: string) => {
   return doctor;
 };
 
+// ! delete doctor
 const deleteDoctor = async (doctorId: string) => {
   const findDoctor = await prisma.doctor.findUnique({
     where: {
@@ -48,7 +51,7 @@ const deleteDoctor = async (doctorId: string) => {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const deletedDoctor = await tx.doctor.update({
+      await tx.doctor.update({
         where: {
           id: doctorId,
         },
@@ -59,7 +62,7 @@ const deleteDoctor = async (doctorId: string) => {
         },
       });
 
-      const deletedUser = await tx.user.update({
+      await tx.user.update({
         where: {
           id: findDoctor.userId,
         },
@@ -69,7 +72,25 @@ const deleteDoctor = async (doctorId: string) => {
         },
       });
 
-      return { deletedDoctor, deletedUser };
+      await tx.account.deleteMany({
+        where: {
+          userId: findDoctor.userId,
+        },
+      });
+
+      await tx.session.deleteMany({
+        where: {
+          userId: findDoctor.userId,
+        },
+      });
+
+      const doctor = await tx.doctor.findUnique({
+        where: {
+          id: doctorId,
+        },
+      });
+
+      return doctor;
     });
 
     return result;
@@ -78,74 +99,66 @@ const deleteDoctor = async (doctorId: string) => {
   }
 };
 
-const updateDoctor = async (
-  doctorId: string,
-  payload: IUpdateDoctorPayload,
-) => {
-  // const { doctor } = payload;
-  const findDoctor = await prisma.doctor.findUnique({
-    where: {
-      id: doctorId,
-    },
+// ! update doctor
+const updateDoctor = async (id: string, payload: IUpdateDoctorPayload) => {
+  const isDoctorExist = await prisma.doctor.findUnique({
+    where: { id },
   });
 
-  if (!findDoctor) {
-    throw new AppError(status.NOT_FOUND, "Doctor not found with this id");
+  if (!isDoctorExist) {
+    throw new AppError(status.NOT_FOUND, "Doctor not found");
   }
 
-  try {
-    const { doctor, specialties } = payload;
-    const result = await prisma.$transaction(async (tx) => {
-      const account = await tx.account.findFirst({
-        where: {
-          userId: findDoctor.userId,
-        },
-      });
+  const { doctor: doctorData, specialties } = payload;
 
-      if (!account) {
-        throw new AppError(status.NOT_FOUND, "Account not found");
-      }
-
-      // const updatedPassword = await tx.account.update({
-      //   where: {
-      //     id: account.id,
-      //   },
-      //   data: {
-      //     password,
-      //   },
-      // });
-
-      const updatedDoctorInfo = await tx.doctor.update({
-        where: {
-          id: doctorId,
-        },
+  await prisma.$transaction(async (tx) => {
+    // ✅ Update doctor basic info
+    if (doctorData) {
+      await tx.doctor.update({
+        where: { id },
         data: {
-          ...doctor,
+          ...doctorData,
         },
       });
+    }
 
-      // if (specialties && specialties.length > 0) {
-      //   for (const specialty of specialties) {
-      //     const { specialtyId, shouldDelete } = specialty;
-      //     if (shouldDelete) {
-      //       await tx.doctorSpecialty.delete({
-      //         where: {
-      //           doctorId_specialtyId: {
-      //             doctorId: doctorId,
-      //             specialtyId: specialtyId,
-      //           },
-      //         },
-      //       });
-      //     }
-      //   }
-      // }
+    // ✅ Handle specialties (delete + upsert)
+    if (specialties && specialties.length > 0) {
+      for (const specialty of specialties) {
+        const { specialtyId, shouldDelete } = specialty;
 
-      return { updatedDoctorInfo };
-    });
-    return result;
-  } catch (err) {
-    console.log("Failed to update doctor", err);
-  }
+        if (shouldDelete) {
+          await tx.doctorSpecialty.delete({
+            where: {
+              unique_doctor_specialty: {
+                doctorId: id,
+                specialtyId,
+              },
+            },
+          });
+        } else {
+          await tx.doctorSpecialty.upsert({
+            where: {
+              unique_doctor_specialty: {
+                doctorId: id,
+                specialtyId,
+              },
+            },
+            create: {
+              doctorId: id,
+              specialtyId,
+            },
+            update: {}, // no update needed, just ensure existence
+          });
+        }
+      }
+    }
+  });
+
+  // ✅ Return updated doctor with relations
+  const doctor = await getDoctorById(id);
+
+  return doctor;
 };
 
 export const doctorService = {

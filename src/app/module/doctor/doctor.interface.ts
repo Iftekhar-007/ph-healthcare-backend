@@ -15,5 +15,5 @@ export interface IUpdateDoctorPayload {
     qualification?: string;
     currentWorkingPlace?: string;
   };
-  specialties?: string[];
+  specialties?: IUpdateDoctorSpecialtyPayload[];
 }
