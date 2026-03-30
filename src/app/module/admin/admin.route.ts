@@ -2,6 +2,8 @@ import { Router } from "express";
 import { adminController } from "./admin.controller";
 import { checkAuth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
+import { validateRequestBody } from "../../middleware/validateRequest";
+import { updateAdminZodSchema } from "./admin.validation";
 
 const router = Router();
 
@@ -20,6 +22,7 @@ router.get(
 router.patch(
   "/:adminId",
   checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  validateRequestBody(updateAdminZodSchema),
   adminController.updateAdmin,
 );
 
