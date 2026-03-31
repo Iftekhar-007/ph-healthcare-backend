@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { UserController } from "./auth.controller";
+import { AuthController } from "./auth.controller";
 import { checkAuth } from "../../middleware/checkAuth";
 import { UserRole } from "../../../generated/prisma/enums";
 
 const router = Router();
 
-router.post("/register-patient", UserController.registerpatient);
+router.post("/register-patient", AuthController.registerpatient);
 
-router.post("/login", UserController.logInUser);
+router.post("/login", AuthController.logInUser);
 
 router.get(
   "/me",
@@ -17,7 +17,20 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
   ),
-  UserController.getMe,
+  AuthController.getMe,
+);
+
+router.post("/refresh-token", AuthController.getNewToken);
+
+router.post(
+  "/change-password",
+  checkAuth(
+    UserRole.PATIENT,
+    UserRole.DOCTOR,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  ),
+  AuthController.changePassword,
 );
 
 export const AuthRoutes = router;

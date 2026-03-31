@@ -21,14 +21,14 @@ router.get(
 
 router.patch(
   "/:adminId",
-  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  checkAuth(UserRole.SUPER_ADMIN),
   validateRequestBody(updateAdminZodSchema),
   adminController.updateAdmin,
 );
 
 router.delete(
   "/:adminId",
-  checkAuth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  checkAuth(UserRole.SUPER_ADMIN),
   adminController.deleteAdmin,
 );
 
