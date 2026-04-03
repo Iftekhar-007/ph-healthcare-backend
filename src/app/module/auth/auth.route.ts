@@ -44,4 +44,6 @@ router.post(
   AuthController.logOutUser,
 );
 
+router.post("/verify-email", AuthController.verifyEmail);
+
 export const AuthRoutes = router;
