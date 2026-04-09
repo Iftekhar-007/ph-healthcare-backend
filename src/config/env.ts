@@ -89,7 +89,7 @@ const loadEnvVariables = (): EnvConfig => {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID!,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET!,
     GOOGLE_CALLBACK_API: process.env.GOOGLE_CALLBACK_API!,
-    FRONTEND_API: process.env.GOOGLE_FRONTEND_API!,
+    FRONTEND_API: process.env.FRONTEND_API!,
   };
 };
 

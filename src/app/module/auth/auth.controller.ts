@@ -6,6 +6,8 @@ import status from "http-status";
 import { tokenUtils } from "../../utils/token";
 import AppError from "../../errorHelpers/AppError";
 import { cookieUtils } from "../../utils/cookie";
+import { envVars } from "../../../config/env";
+import { auth } from "../../lib/auth";
 
 const registerpatient = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -187,11 +189,61 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const googleLogin = catchAsync((req: Request, res: Response) => {});
+const googleLogin = catchAsync((req: Request, res: Response) => {
+  const redirectPath = req.query.redirect || "/dashboard";
 
-const googleLoginSuccess = catchAsync((req: Request, res: Response) => {});
+  const encodedRedirectPath = encodeURIComponent(redirectPath as string);
 
-const handleOAuthError = catchAsync((req: Request, res: Response) => {});
+  const callbackURL = `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success?redirect=${encodedRedirectPath}`;
+
+  res.render("googleRedirect", {
+    callbackUrl: callbackURL,
+    betterAuthUrl: envVars.BETTER_AUTH_URL,
+  });
+});
+
+const googleLoginSuccess = catchAsync(async (req: Request, res: Response) => {
+  const redirectPath = (req.query.redirect as string) || "/dashboard";
+
+  const sessionToken = req.cookies["better-auth.session_token"];
+
+  if (!sessionToken) {
+    return res.redirect(`${envVars.FRONTEND_API}/login?error=oauth_failed`);
+  }
+
+  const session = await auth.api.getSession({
+    headers: {
+      Cookie: `better-auth.session_token=${sessionToken};`,
+    },
+  });
+
+  if (!session) {
+    return res.redirect(`${envVars.FRONTEND_API}/login?error=no session found`);
+  }
+
+  if (session && !session.user) {
+    return res.redirect(`${envVars.FRONTEND_API}/login?error=no user found`);
+  }
+
+  const result = await AuthService.googleLoginSuccess(session);
+
+  const { accessToken, refreshToken } = result;
+
+  tokenUtils.setAccessToken(res, accessToken);
+  tokenUtils.setRefreshToken(res, refreshToken);
+
+  const isvalidRedirectPath =
+    redirectPath.startsWith("/") && !redirectPath.startsWith("//");
+
+  const finalRedirectPath = isvalidRedirectPath ? redirectPath : "/dashboard";
+
+  res.redirect(`${envVars.FRONTEND_API}${finalRedirectPath}`);
+});
+
+const handleOAuthError = catchAsync((req: Request, res: Response) => {
+  const error = (req.query.error as string) || "oauth_failed";
+  res.redirect(`${envVars.FRONTEND_API}/login?error=${error}`);
+});
 
 export const AuthController = {
   registerpatient,
