@@ -405,6 +405,8 @@ const resetPassword = async (
   });
 };
 
+const googleLoginSuccess = async () => {};
+
 export const AuthService = {
   registerPatient,
   logInUser,
@@ -415,4 +417,5 @@ export const AuthService = {
   verifyEmail,
   forgetPassword,
   resetPassword,
+  googleLoginSuccess,
 };
