@@ -36,6 +36,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(express.urlencoded({ extended: true }));
+
 // Basic route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript + Express!");
