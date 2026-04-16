@@ -4,7 +4,6 @@ import multer from "multer";
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinaryUpload,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   params: async (req, file) => {
     const originalName = file.originalname;
     const extension = originalName.split(".").pop()?.toLocaleLowerCase();
