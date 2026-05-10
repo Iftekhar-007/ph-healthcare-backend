@@ -4,11 +4,16 @@ import {
   PrismaCountManyArgs,
   PrismaFindManyArgs,
   PrismaModelDelegate,
+  PrismaStringFilter,
+  PrismaWhereConditions,
 } from "../interfaces/query.interface";
 
 export class QueryBuilder<
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TWhereInput = Record<string, unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TInclude = Record<string, unknown>,
 > {
   private query: PrismaFindManyArgs;
@@ -18,7 +23,7 @@ export class QueryBuilder<
   private skip: number = 0;
   private sortBy: string = "createdAt";
   private sortOrder: "asc" | "desc" = "desc";
-  private selectFields: Record<string, boolean | undefined>;
+  // private selectFields: Record<string, boolean | undefined>;
 
   constructor(
     private model: PrismaModelDelegate,
@@ -49,6 +54,62 @@ export class QueryBuilder<
     const { searchableFields } = this.config;
 
     if (searchTerm && searchableFields && searchableFields.length > 0) {
+      const searchConditions: Record<string, unknown>[] = searchableFields.map(
+        (field) => {
+          if (field.includes(".")) {
+            const parts = field.split(".");
+
+            if (parts.length === 2) {
+              const [relation, nestedField] = parts;
+
+              const stringFilter: PrismaStringFilter = {
+                contains: searchTerm,
+                mode: "insensitive" as const,
+              };
+
+              return {
+                [relation]: {
+                  [nestedField]: stringFilter,
+                },
+              };
+            } else if (parts.length === 3) {
+              const [relation, nestedRelation, nestedField] = parts;
+
+              const stringFilter: PrismaStringFilter = {
+                contains: searchTerm,
+                mode: "insensitive" as const,
+              };
+
+              return {
+                [relation]: {
+                  [nestedRelation]: {
+                    [nestedField]: stringFilter,
+                  },
+                },
+              };
+            }
+          }
+          const stringFilter: PrismaStringFilter = {
+            contains: searchTerm,
+            mode: "insensitive" as const,
+          };
+
+          return {
+            [field]: stringFilter,
+          };
+        },
+      );
+
+      const whereConditions = this.query.where as PrismaWhereConditions;
+
+      whereConditions.OR = searchConditions;
+
+      const countWhereConditions = this.countQuery
+        .where as PrismaWhereConditions;
+
+      countWhereConditions.OR = searchConditions;
     }
+
+    return this;
   }
 }
