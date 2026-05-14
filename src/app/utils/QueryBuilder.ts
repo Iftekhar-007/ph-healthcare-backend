@@ -112,4 +112,35 @@ export class QueryBuilder<
 
     return this;
   }
+
+  filter(): this {
+    const { filterableFields } = this.config;
+
+    const excludeField = [
+      "page",
+      "limit",
+      "sortBy",
+      "sortOrder",
+      "fields",
+      "includes",
+      "searchTerm",
+    ];
+
+    const filterParams: Record<string, unknown> = {};
+
+    Object.keys(this.queryParams).forEach((key) => {
+      if (!excludeField.includes(key)) {
+        filterParams[key] = this.queryParams[key];
+      }
+    });
+
+    const queryWhere = this.query.where as Record<string, unknown>;
+    const countQueryWhere = this.countQuery.where as Record<string, unknown>;
+
+    Object.keys(filterParams).forEach((key) => {
+      const value = filterParams[key];
+    });
+
+    return this;
+  }
 }
