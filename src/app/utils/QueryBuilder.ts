@@ -4,6 +4,7 @@ import {
   PrismaCountManyArgs,
   PrismaFindManyArgs,
   PrismaModelDelegate,
+  PrismaNumberFilter,
   PrismaStringFilter,
   PrismaWhereConditions,
 } from "../interfaces/query.interface";
@@ -139,8 +140,124 @@ export class QueryBuilder<
 
     Object.keys(filterParams).forEach((key) => {
       const value = filterParams[key];
+
+      if (value === undefined || value === "") {
+        return;
+      }
+
+      const isAllowedField =
+        !filterableFields ||
+        filterableFields.length === 0 ||
+        filterableFields.includes(key);
+
+      if (!isAllowedField) {
+        return;
+      }
+
+      if (key.includes(".")) {
+        const parts = key.split(".");
+
+        if (parts.length === 2) {
+          const [relation, nestedField] = parts;
+
+          queryWhere[relation] = {
+            [nestedField]: value,
+          };
+
+          countQueryWhere[relation] = {
+            [nestedField]: value,
+          };
+        } else if (parts.length === 3) {
+          const [relation, nestedRelation, nestedField] = parts;
+
+          queryWhere[relation] = {
+            [nestedRelation]: {
+              [nestedField]: value,
+            },
+          };
+
+          countQueryWhere[relation] = {
+            [nestedRelation]: {
+              [nestedField]: value,
+            },
+          };
+        }
+      } else {
+        queryWhere[key] = value;
+        countQueryWhere[key] = value;
+      }
+
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        queryWhere[key] = this.parseFilterValue(value);
+        countQueryWhere[key] = this.parseFilterValue(value);
+        return;
+      }
     });
 
     return this;
+  }
+
+  private parseFilterValue(value: unknown): unknown {
+    if (value === "true") {
+      return true;
+    }
+    if (value === "false") {
+      return false;
+    }
+
+    if (typeof value === "string" && !isNaN(Number(value)) && value !== "") {
+      return Number(value);
+    }
+
+    if (Array.isArray(value)) {
+      return { in: value.map((item) => this.parseFilterValue(item)) };
+    }
+
+    return value;
+  }
+
+  private parseRangeFilter(
+    value: Record<string, string | number>,
+  ): PrismaNumberFilter | PrismaStringFilter | Record<string, unknown> {
+    const rangeQuery: Record<string, string | number | (string | number)[]> =
+      {};
+
+    Object.keys(value).forEach((operator) => {
+      const operatorValue = value[operator];
+
+      const parsedValue: string | number =
+        typeof operatorValue === "string" && !isNaN(Number(operatorValue))
+          ? Number(operatorValue)
+          : operatorValue;
+
+      switch (operator) {
+        case "equals":
+        case "gt":
+        case "gte":
+        case "lt":
+        case "lte":
+        case "contains":
+        case "startsWith":
+        case "endsWith":
+          rangeQuery[operator] = parsedValue;
+          break;
+
+        case "in":
+        case "notIn":
+          if (Array.isArray(operatorValue)) {
+            rangeQuery[operator] = operatorValue;
+          } else {
+            rangeQuery[operator] = [parsedValue];
+          }
+          break;
+        default:
+          break;
+      }
+    });
+    return Object.keys(rangeQuery).length > 0 ? rangeQuery : value;
   }
 }
