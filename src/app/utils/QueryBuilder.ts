@@ -157,16 +157,25 @@ export class QueryBuilder<
       if (key.includes(".")) {
         const parts = key.split(".");
 
+        if (filterableFields && !filterableFields.includes(key)) {
+          return;
+        }
+
         if (parts.length === 2) {
           const [relation, nestedField] = parts;
 
+          if (!queryWhere[relation]) {
+            queryWhere[relation] = {};
+          }
+
           queryWhere[relation] = {
-            [nestedField]: value,
+            [nestedField]: this.parseFilterValue(value),
           };
 
           countQueryWhere[relation] = {
-            [nestedField]: value,
+            [nestedField]: this.parseFilterValue(value),
           };
+          return;
         } else if (parts.length === 3) {
           const [relation, nestedRelation, nestedField] = parts;
 
@@ -178,13 +187,15 @@ export class QueryBuilder<
 
           countQueryWhere[relation] = {
             [nestedRelation]: {
-              [nestedField]: value,
+              [nestedField]: this.parseFilterValue(value),
             },
           };
+          return;
         }
       } else {
         queryWhere[key] = value;
         countQueryWhere[key] = value;
+        return;
       }
 
       if (
@@ -193,9 +204,16 @@ export class QueryBuilder<
         !Array.isArray(value)
       ) {
         queryWhere[key] = this.parseFilterValue(value);
-        countQueryWhere[key] = this.parseFilterValue(value);
+        countQueryWhere[key] = this.parseRangeFilter(
+          value as Record<string, string | number>,
+        );
         return;
       }
+
+      queryWhere[key] = this.parseFilterValue(value);
+      countQueryWhere[key] = this.parseRangeFilter(
+        value as Record<string, string | number>,
+      );
     });
 
     return this;
