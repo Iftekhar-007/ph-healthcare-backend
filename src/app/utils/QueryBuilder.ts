@@ -282,14 +282,37 @@ export class QueryBuilder<
   fields(): this {
     const fieldsParam = this.queryParams.fields;
 
-    const fieldsArray = fieldsParam?.split(",").map((field) => field.trim());
-    this.selectFields = {};
+    if (fieldsParam && typeof fieldsParam === "string") {
+      const fieldsArray = fieldsParam?.split(",").map((field) => field.trim());
+      this.selectFields = {};
 
-    fieldsArray?.forEach((field) => {
-      if (this.selectFields) {
-        this.selectFields[field] = true;
-      }
-    });
+      fieldsArray?.forEach((field) => {
+        if (this.selectFields) {
+          this.selectFields[field] = true;
+        }
+      });
+
+      this.query.select = this.selectFields as Record<
+        string,
+        boolean | Record<string, unknown>
+      >;
+
+      delete this.query.include;
+    }
+
+    return this;
+  }
+
+  // ! include method
+  include(relation: TInclude): this {
+    if (this.selectFields) {
+      return this;
+    }
+
+    this.query.include = {
+      ...(this.query.include as Record<string, unknown>),
+      ...relation,
+    };
 
     return this;
   }
