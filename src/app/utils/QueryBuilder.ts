@@ -1,6 +1,7 @@
 import {
   IQueryConfig,
   IQueryParams,
+  IQueryResult,
   PrismaCountManyArgs,
   PrismaFindManyArgs,
   PrismaModelDelegate,
@@ -10,7 +11,6 @@ import {
 } from "../interfaces/query.interface";
 
 export class QueryBuilder<
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T,
   TWhereInput = Record<string, unknown>,
   TInclude = Record<string, unknown>,
@@ -365,6 +365,39 @@ export class QueryBuilder<
     );
 
     return this;
+  }
+
+  async execute(): Promise<IQueryResult<T>> {
+    const [total, data] = await Promise.all([
+      this.model.count(
+        this.countQuery as Parameters<typeof this.model.count>[0],
+      ),
+      this.model.findMany(
+        this.query as Parameters<typeof this.model.findMany>[0],
+      ),
+    ]);
+
+    const totalPages = Math.ceil(total / this.limit);
+
+    return {
+      data: data as [T],
+      meta: {
+        page: this.page,
+        limit: this.limit,
+        total,
+        totalPages,
+      },
+    };
+  }
+
+  async count(): Promise<number> {
+    return await this.model.count(
+      this.countQuery as Parameters<typeof this.model.count>[0],
+    );
+  }
+
+  getQuery(): PrismaFindManyArgs {
+    return this.query;
   }
 
   private deepMerge(
