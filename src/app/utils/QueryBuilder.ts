@@ -12,9 +12,7 @@ import {
 export class QueryBuilder<
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   T,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TWhereInput = Record<string, unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   TInclude = Record<string, unknown>,
 > {
   private query: PrismaFindManyArgs;
@@ -311,10 +309,92 @@ export class QueryBuilder<
 
     this.query.include = {
       ...(this.query.include as Record<string, unknown>),
-      ...relation,
+      ...(relation as Record<string, unknown>),
     };
 
     return this;
+  }
+
+  dynamicInclude(
+    includeConfig: Record<string, unknown>,
+    defaultInclude?: string[],
+  ): this {
+    if (this.selectFields) {
+      return this;
+    }
+
+    const result: Record<string, unknown> = {};
+
+    defaultInclude?.forEach((field) => {
+      if (includeConfig[field]) {
+        result[field] = includeConfig[field];
+      }
+    });
+
+    const includeParam = this.queryParams.includes as string | undefined;
+
+    if (includeParam && typeof includeParam === "string") {
+      const requestedRelations = includeParam
+        .split(",")
+        .map((relation) => relation.trim());
+
+      requestedRelations.forEach((relation) => {
+        if (includeConfig[relation]) {
+          result[relation] = includeConfig[relation];
+        }
+      });
+    }
+
+    this.query.include = {
+      ...(this.query.include as Record<string, unknown>),
+      ...result,
+    };
+
+    return this;
+  }
+
+  where(condition: TWhereInput): this {
+    this.query.where = this.deepMerge(
+      this.query.where as Record<string, unknown>,
+      condition as Record<string, unknown>,
+    );
+
+    this.countQuery.where = this.deepMerge(
+      this.countQuery.where as Record<string, unknown>,
+      condition as Record<string, unknown>,
+    );
+
+    return this;
+  }
+
+  private deepMerge(
+    target: Record<string, unknown>,
+    source: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const result = { ...target };
+
+    for (const key in source) {
+      if (
+        source[key] &&
+        typeof source[key] === "object" &&
+        !Array.isArray(source[key])
+      ) {
+        if (
+          result[key] &&
+          typeof result[key] === "object" &&
+          !Array.isArray(result[key])
+        ) {
+          result[key] = this.deepMerge(
+            result[key] as Record<string, unknown>,
+            source[key] as Record<string, unknown>,
+          );
+        } else {
+          result[key] = source[key];
+        }
+      }
+    }
+
+    return result;
   }
 
   private parseFilterValue(value: unknown): unknown {
