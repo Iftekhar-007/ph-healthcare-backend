@@ -71,18 +71,37 @@ export class QueryBuilder<
                   [nestedField]: stringFilter,
                 },
               };
-            } else if (parts.length === 3) {
+            }
+            //  else if (parts.length === 3) {
+            //   const [relation, nestedRelation, nestedField] = parts;
+
+            //   const stringFilter: PrismaStringFilter = {
+            //     contains: searchTerm,
+            //     mode: "insensitive" as const,
+            //   };
+
+            //   return {
+            //     [relation]: {
+            //       [nestedRelation]: {
+            //         [nestedField]: stringFilter,
+            //       },
+            //     },
+            //   };
+            // }
+            else if (parts.length === 3) {
               const [relation, nestedRelation, nestedField] = parts;
 
               const stringFilter: PrismaStringFilter = {
                 contains: searchTerm,
-                mode: "insensitive" as const,
+                mode: "insensitive",
               };
 
               return {
                 [relation]: {
-                  [nestedRelation]: {
-                    [nestedField]: stringFilter,
+                  some: {
+                    [nestedRelation]: {
+                      [nestedField]: stringFilter,
+                    },
                   },
                 },
               };

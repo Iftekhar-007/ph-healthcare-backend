@@ -2,19 +2,52 @@ import status from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
 import { IUpdateDoctorPayload } from "./doctor.interface";
+import {
+  doctorFilterableFields,
+  doctorInputConfig,
+  doctorSearchableFields,
+} from "./doctor.constant";
+import { IQueryParams } from "../../interfaces/query.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { Doctor, Prisma } from "../../../generated/prisma/client";
 
 // ! get all doctor api
-const getAllDoctors = async () => {
-  const result = await prisma.doctor.findMany({
-    include: {
-      user: true,
-      doctorSpecialties: {
-        include: {
-          specialty: true,
-        },
-      },
-    },
+const getAllDoctors = async (query: IQueryParams) => {
+  // const result = await prisma.doctor.findMany({
+  //   include: {
+  //     user: true,
+  //     doctorSpecialties: {
+  //       include: {
+  //         specialty: true,
+  //       },
+  //     },
+  //   },
+  // });
+
+  // return result;
+
+  const queryBuilder = new QueryBuilder<
+    Doctor,
+    Prisma.DoctorWhereInput,
+    Prisma.DoctorInclude
+  >(prisma.doctor, query, {
+    searchableFields: doctorSearchableFields,
+    filterableFields: doctorFilterableFields,
   });
+
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({ isDeleted: false })
+    .include({
+      user: true,
+      doctorSpecialties: true,
+    })
+    .dynamicInclude(doctorInputConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
 
   return result;
 };
