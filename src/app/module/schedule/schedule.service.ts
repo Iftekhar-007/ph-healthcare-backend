@@ -27,9 +27,9 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
       addMinutes(
         addHours(
           `${format(currentDate, "yyyy-MM-dd")}`,
-          Number(startTime.split(".")[0]),
+          Number(endTime.split(".")[0]),
         ),
-        Number(startTime.split(".")[1]),
+        Number(endTime.split(".")[1]),
       ),
     );
 
@@ -59,6 +59,8 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
 
       startDateTime.setMinutes(startDateTime.getMinutes() + interval);
     }
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 };
 
