@@ -41,7 +41,11 @@ const getAllDoctors = async (query: IQueryParams) => {
     .where({ isDeleted: false })
     .include({
       user: true,
-      doctorSpecialties: true,
+      doctorSpecialties: {
+        include: {
+          specialty: true,
+        },
+      },
     })
     .dynamicInclude(doctorInputConfig)
     .paginate()
