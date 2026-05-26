@@ -62,6 +62,8 @@ const createSchedule = async (payload: ICreateSchedulePayload) => {
 
     currentDate.setDate(currentDate.getDate() + 1);
   }
+
+  return schedules;
 };
 
 const getAllSchedules = async () => {};
